@@ -4,6 +4,8 @@ import com.newOne.customException.EcommerceException;
 import com.newOne.entity.*;
 import com.newOne.repository.*;
 import com.newOne.request.OrderRequestDto;
+import com.newOne.response.OrderGetterResponse;
+import com.newOne.response.OrderItemResponse;
 import com.newOne.response.OrderResponse;
 import com.newOne.response.OrderResponseDto;
 import com.newOne.service.OrderService;
@@ -234,7 +236,7 @@ public class OrderServiceImpl implements OrderService {
 
 
     @Override
-    public List<OrderResponse> getOrders(Long userId, Long orderId) {
+    public List<OrderGetterResponse> getOrders(Long userId, Long orderId) {
         List<Orders> orders = (userId != null && orderId != null)
                 ? orderRepository.findByUserIdAndId(userId, orderId)
                 : (userId != null)
@@ -244,16 +246,33 @@ public class OrderServiceImpl implements OrderService {
                 : orderRepository.findAll();
 
         log.info("Found {} orders", orders.size());
-        return orders.stream().map(this::mapToOrderResponse).collect(Collectors.toList());
+        return orders.stream().map(this::mapToOrderGetterResponse).collect(Collectors.toList());
     }
 
-    private OrderResponse mapToOrderResponse(Orders order) {
-        return new OrderResponse(
-                order.getUser().getId(),
+
+    private OrderGetterResponse mapToOrderGetterResponse(Orders order) {
+        List<OrderItemResponse> orderItems = orderItemRepository.findByOrderId((long) order.getId())
+                .stream()
+                .map(item -> new OrderItemResponse(
+                        item.getProduct().getId() != null ? item.getProduct().getId().longValue() : null,
+                        item.getProductName(),
+                        item.getQuantity(),
+                        item.getPrice()
+                )).collect(Collectors.toList());
+
+
+        String latestStatus = orderAuditRepository.findTopByOrderIdOrderByUpdatedAtDesc((long) order.getId())
+                .map(orderAudit -> orderAudit.getCurrentStatus().getStatusName())
+                .orElse("Unknown");
+
+        return new OrderGetterResponse(
+                (long) order.getUser().getId(),
                 order.getTotalAmount(),
-                order.getOrderStatus()
+                orderItems,
+                latestStatus
         );
     }
+
 
     @Transactional
     @Override

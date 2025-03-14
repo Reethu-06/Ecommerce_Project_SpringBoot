@@ -1,6 +1,7 @@
 package com.newOne.controller;
 
 import com.newOne.request.OrderRequestDto;
+import com.newOne.response.OrderGetterResponse;
 import com.newOne.response.OrderResponse;
 import com.newOne.response.OrderResponseDto;
 import com.newOne.security.RoleAccessUtil;
@@ -68,18 +69,20 @@ public class OrderController {
      * @return List of orders or access denied
      */
     @GetMapping("/get")
-    public ResponseEntity<List<OrderResponse>> getOrders(
+    public ResponseEntity<List<OrderGetterResponse>> getOrders(
             @RequestParam(required = false) Long userId,
             @RequestParam(required = false) Long orderId,
             HttpServletRequest httpRequest) {
 
         log.info("Fetching orders. UserId: {}, OrderId: {}", userId, orderId);
 
+        // Access Control
         if (!roleAccessUtil.hasAdminAccess(httpRequest) && !roleAccessUtil.hasUserAccess(httpRequest)) {
             log.warn("Access denied while attempting to fetch orders.");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
         }
 
+        // Auto-assign userId for user role
         if (roleAccessUtil.hasUserAccess(httpRequest)) {
             Integer userIdFromToken = Integer.valueOf(httpRequest.getAttribute("userId").toString());
             userId = (userId == null) ? userIdFromToken.longValue() : userId;
@@ -87,10 +90,12 @@ public class OrderController {
             log.info("User access confirmed. Fetching orders for User ID: {}", userId);
         }
 
-        List<OrderResponse> orders = orderService.getOrders(userId, orderId);
+        List<OrderGetterResponse> orders = orderService.getOrders(userId, orderId);
         log.info("Fetched {} orders successfully.", orders.size());
+
         return ResponseEntity.ok(orders);
     }
+
 
     /**
      * Cancel an order (User or Admin access).

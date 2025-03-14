@@ -3,6 +3,7 @@ package com.newOne.service;
 
 import com.newOne.request.OrderRequestDto;
 
+import com.newOne.response.OrderGetterResponse;
 import com.newOne.response.OrderResponse;
 import com.newOne.response.OrderResponseDto;
 
@@ -27,7 +28,7 @@ public interface OrderService {
      * @param orderId The ID of the specific order (optional, can be used for filtering).
      * @return A list of OrderResponse containing details about each order.
      */
-    List<OrderResponse> getOrders(Long userId, Long orderId);
+    List<OrderGetterResponse> getOrders(Long userId, Long orderId);
 
     /**
      * Updates the status of a given order.
