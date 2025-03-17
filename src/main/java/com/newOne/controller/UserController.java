@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
  * UserController handles user-related endpoints such as registration for both regular users and admins.
  */
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/auth")
 @Slf4j  // Lombok annotation to generate logger
 public class UserController {
 
@@ -27,7 +27,7 @@ public class UserController {
      * @param request The user registration request containing user details.
      * @return A response indicating success or failure.
      */
-    @PostMapping("/register")
+    @PostMapping("/user/register")
     public ResponseEntity<String> registerUser(@RequestBody UserRegistrationRequest request) {
         log.info("Registering new user with email: {}", request.getEmail());
 
